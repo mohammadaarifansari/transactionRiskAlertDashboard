@@ -1,0 +1,227 @@
+.timeline-section {
+  background: var(--color-surface);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+}
+
+.timeline-section__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.timeline-section__title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.timeline-section__summary {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.timeline-section__elevated-count {
+  color: var(--color-elevated);
+  font-weight: 600;
+}
+
+// ── State messages ─────────────────────────────────────────────────────────
+
+.timeline-state {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1rem;
+  border-radius: var(--border-radius-md);
+  font-size: 0.9375rem;
+
+  &--loading {
+    background: var(--color-background);
+    color: var(--color-text-secondary);
+    justify-content: center;
+  }
+
+  &--empty {
+    background: var(--color-background);
+    color: var(--color-text-secondary);
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  &--error {
+    background: var(--color-risk-red-bg);
+    color: var(--color-risk-red);
+    border: 1px solid var(--color-risk-red-border);
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.timeline-state__icon {
+  font-size: 1.5rem;
+}
+
+.timeline-state__message {
+  margin: 0;
+}
+
+// ── Spinner ────────────────────────────────────────────────────────────────
+
+.spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--color-border-strong);
+  border-top-color: var(--color-focus-ring);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-top-color: var(--color-focus-ring);
+    opacity: 0.6;
+  }
+}
+
+// ── Charts grid ────────────────────────────────────────────────────────────
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Chart panel ────────────────────────────────────────────────────────────
+
+.chart-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: 0.875rem;
+  background: var(--color-surface);
+}
+
+.chart-panel__title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  margin: 0 0 0.75rem;
+}
+
+.chart-panel__chart-wrapper {
+  position: relative;
+}
+
+// ── SVG trend chart ────────────────────────────────────────────────────────
+
+.trend-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.chart-grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+
+  &--threshold {
+    stroke: var(--color-elevated);
+    stroke-dasharray: 4 4;
+    stroke-width: 1.5;
+    opacity: 0.6;
+  }
+}
+
+// Amount chart colours
+.trend-chart__area--amount {
+  fill: #3b82f6;
+  fill-opacity: 0.08;
+}
+
+.trend-chart__line--amount {
+  stroke: #3b82f6;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trend-chart__dot--amount {
+  fill: #3b82f6;
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+// Risk score chart colours
+.trend-chart__area--risk {
+  fill: var(--color-risk-red);
+  fill-opacity: 0.07;
+}
+
+.trend-chart__line--risk {
+  stroke: var(--color-risk-red);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trend-chart__dot--risk {
+  fill: var(--color-risk-red);
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+// Elevated suspicion markers
+.trend-chart__dot--elevated {
+  fill: var(--color-elevated);
+  stroke: #fff;
+  stroke-width: 2;
+  cursor: default;
+}
+
+// ── X-axis labels ──────────────────────────────────────────────────────────
+
+.chart-xaxis {
+  position: relative;
+  height: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+.chart-xaxis__label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.625rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+// ── Threshold label ────────────────────────────────────────────────────────
+
+.chart-threshold-label {
+  font-size: 0.625rem;
+  color: var(--color-elevated);
+  opacity: 0.85;
+  text-align: right;
+  margin-top: 0.125rem;
+}

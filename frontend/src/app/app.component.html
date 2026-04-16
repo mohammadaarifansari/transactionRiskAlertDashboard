@@ -1,0 +1,44 @@
+<a class="sr-only" href="#main-content">Skip to main content</a>
+
+<header class="app-header" role="banner">
+  <div class="app-header__inner">
+    <div class="app-header__brand">
+      <span class="app-header__logo" aria-hidden="true">🛡</span>
+      <h1 class="app-header__title">Transaction Risk Dashboard</h1>
+    </div>
+    <p class="app-header__subtitle">Fraud Operations · Account Risk Assessment</p>
+  </div>
+</header>
+
+<main id="main-content" class="app-main" tabindex="-1">
+  <div class="app-main__inner">
+
+    <section aria-label="Account search">
+      <app-account-search
+        (accountSelected)="onAccountSelected($event)"
+        (searchCleared)="onSearchCleared()"
+      />
+    </section>
+
+    @if (hasSelection()) {
+      <div class="app-main__results" aria-live="polite" aria-atomic="false">
+
+        <section aria-label="Risk assessment summary">
+          <app-risk-summary [account]="selectedAccount()!" />
+        </section>
+
+        <section aria-label="24-hour timeline">
+          <app-timeline-charts [accountId]="selectedAccount()!.accountId" />
+        </section>
+
+      </div>
+    }
+
+  </div>
+</main>
+
+<footer class="app-footer" role="contentinfo">
+  <p class="app-footer__text">
+    Risk tiers: GREEN (0.00–0.39) · YELLOW (0.40–0.69) · RED (0.70–1.00)
+  </p>
+</footer>

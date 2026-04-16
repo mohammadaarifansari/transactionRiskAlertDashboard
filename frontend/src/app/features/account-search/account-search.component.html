@@ -1,0 +1,95 @@
+<div class="search-container">
+  <form
+    class="search-form"
+    role="search"
+    aria-label="Account search"
+    (submit)="onSubmit($event)"
+  >
+    <label class="search-form__label" for="account-search-input">
+      Search by account ID or customer name
+    </label>
+
+    <div class="search-form__row">
+      <div class="search-form__input-wrapper">
+        <input
+          id="account-search-input"
+          class="search-form__input"
+          type="search"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          placeholder="e.g. ACC-001 or Marcus Lindqvist"
+          aria-describedby="search-hint"
+          aria-autocomplete="list"
+          aria-controls="search-results"
+          [formControl]="searchControl"
+        />
+        @if (searchControl.value) {
+          <button
+            type="button"
+            class="search-form__clear"
+            aria-label="Clear search"
+            (click)="clearSearch()"
+          >
+            ✕
+          </button>
+        }
+      </div>
+
+      <button
+        type="submit"
+        class="search-form__submit"
+        [disabled]="!searchControl.value.trim()"
+      >
+        Search
+      </button>
+    </div>
+
+    <p id="search-hint" class="search-form__hint">
+      Enter a full or partial account ID or customer name.
+    </p>
+  </form>
+
+  <!-- Search results -->
+  <div
+    id="search-results"
+    role="listbox"
+    aria-label="Search results"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    @if (hasSearched() && results().length === 0) {
+      <p class="search-empty" role="status">
+        No accounts found matching your search.
+      </p>
+    }
+
+    @if (results().length > 0) {
+      <ul class="search-results" aria-label="Matching accounts">
+        @for (account of results(); track account.accountId) {
+          <li class="search-results__item">
+            <button
+              class="search-results__btn"
+              type="button"
+              role="option"
+              [attr.aria-selected]="false"
+              (click)="selectAccount(account)"
+            >
+              <span class="search-results__id">{{ account.accountId }}</span>
+              <span class="search-results__name">{{ account.customerName }}</span>
+              @if (account.accountStatus) {
+                <span
+                  class="search-results__status"
+                  [class.search-results__status--blocked]="account.accountStatus === 'BLOCKED'"
+                  [attr.aria-label]="'Status: ' + account.accountStatus"
+                >
+                  {{ account.accountStatus }}
+                </span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

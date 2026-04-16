@@ -1,0 +1,307 @@
+<section class="timeline-section" aria-labelledby="timeline-heading">
+
+  <header class="timeline-section__header">
+    <h2 id="timeline-heading" class="timeline-section__title">
+      24-Hour Transaction Timeline
+    </h2>
+
+    @if (!isLoading() && hasData()) {
+      <p class="timeline-section__summary" aria-live="polite">
+        {{ windows().length }} hourly window{{ windows().length !== 1 ? 's' : '' }}
+        @if (elevatedWindowCount() > 0) {
+          ·
+          <span class="timeline-section__elevated-count">
+            {{ elevatedWindowCount() }} elevated suspicion
+          </span>
+        }
+      </p>
+    }
+  </header>
+
+  <!-- Loading state -->
+  @if (isLoading()) {
+    <div
+      class="timeline-state timeline-state--loading"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading 24-hour timeline data"
+    >
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Loading timeline…</span>
+    </div>
+  }
+
+  <!-- Error state -->
+  @if (!isLoading() && hasError()) {
+    <div
+      class="timeline-state timeline-state--error"
+      role="alert"
+      aria-live="assertive"
+    >
+      <span class="timeline-state__icon" aria-hidden="true">⚠</span>
+      <p class="timeline-state__message">{{ errorMessage() }}</p>
+    </div>
+  }
+
+  <!-- Empty state -->
+  @if (!isLoading() && !hasError() && !hasData()) {
+    <div
+      class="timeline-state timeline-state--empty"
+      role="status"
+      aria-live="polite"
+    >
+      <span class="timeline-state__icon" aria-hidden="true">📋</span>
+      <p class="timeline-state__message">
+        No transaction activity found for this account in the last 24 hours.
+      </p>
+    </div>
+  }
+
+  <!-- Chart content -->
+  @if (!isLoading() && !hasError() && hasData()) {
+    <div class="charts-grid">
+
+      <!-- ── Amount Trend ─────────────────────────────────────────── -->
+      <div class="chart-panel">
+        <h3 class="chart-panel__title" id="amount-chart-heading">
+          Transaction Amount Trend
+        </h3>
+
+        <div class="chart-panel__chart-wrapper">
+          <svg
+            class="trend-chart"
+            [attr.viewBox]="'0 0 ' + chartBounds.viewWidth + ' ' + chartBounds.viewHeight"
+            role="img"
+            aria-labelledby="amount-chart-title"
+            focusable="false"
+          >
+            <title id="amount-chart-title">
+              Transaction amounts over the last 24 hours for {{ windows().length }} hourly windows.
+              Peak: {{ amountTrend().maxValue | number: '1.0-0' }}
+            </title>
+
+            <!-- Grid lines -->
+            <line
+              class="chart-grid"
+              [attr.x1]="chartBounds.paddingX"
+              [attr.y1]="chartBounds.paddingY"
+              [attr.x2]="chartBounds.viewWidth - chartBounds.paddingX"
+              [attr.y2]="chartBounds.paddingY"
+            />
+            <line
+              class="chart-grid"
+              [attr.x1]="chartBounds.paddingX"
+              [attr.y1]="chartBounds.viewHeight / 2"
+              [attr.x2]="chartBounds.viewWidth - chartBounds.paddingX"
+              [attr.y2]="chartBounds.viewHeight / 2"
+            />
+            <line
+              class="chart-grid"
+              [attr.x1]="chartBounds.paddingX"
+              [attr.y1]="chartBounds.viewHeight - chartBounds.paddingY"
+              [attr.x2]="chartBounds.viewWidth - chartBounds.paddingX"
+              [attr.y2]="chartBounds.viewHeight - chartBounds.paddingY"
+            />
+
+            <!-- Shading below the line -->
+            @if (!amountTrend().isEmpty) {
+              <polygon
+                class="trend-chart__area trend-chart__area--amount"
+                [attr.points]="
+                  amountTrend().polylinePoints +
+                  ' ' +
+                  (chartBounds.viewWidth - chartBounds.paddingX) + ',' + (chartBounds.viewHeight - chartBounds.paddingY) +
+                  ' ' +
+                  chartBounds.paddingX + ',' + (chartBounds.viewHeight - chartBounds.paddingY)
+                "
+              />
+
+              <!-- Main polyline -->
+              <polyline
+                class="trend-chart__line trend-chart__line--amount"
+                [attr.points]="amountTrend().polylinePoints"
+                fill="none"
+              />
+
+              <!-- Data points -->
+              @for (point of amountTrend().points; track point.label) {
+                <circle
+                  class="trend-chart__dot trend-chart__dot--amount"
+                  [attr.cx]="point.svgX"
+                  [attr.cy]="point.svgY"
+                  r="3"
+                  [attr.aria-label]="point.label + ': ' + (point.value | number: '1.0-0')"
+                />
+              }
+            }
+          </svg>
+
+          <!-- X-axis labels (sampled to avoid clutter for 24 points) -->
+          <div class="chart-xaxis" aria-hidden="true">
+            @for (point of amountTrend().points; track point.label; let i = $index) {
+              @if (i === 0 || i === amountTrend().points.length - 1 || i % 6 === 0) {
+                <span
+                  class="chart-xaxis__label"
+                  [style.left.%]="(i / (amountTrend().points.length - 1)) * 100"
+                >
+                  {{ point.label }}
+                </span>
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Data table for screen readers -->
+        <table class="sr-only" aria-label="Amount trend hourly data">
+          <caption>Transaction amounts per hour over the last 24 hours</caption>
+          <thead>
+            <tr>
+              <th scope="col">Hour (UTC)</th>
+              <th scope="col">Transactions</th>
+              <th scope="col">Total Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (window of windows(); track window.hourStart) {
+              <tr>
+                <td>{{ window.hourStart | date: 'HH:mm' : 'UTC' }}</td>
+                <td>{{ window.transactionCount }}</td>
+                <td>{{ window.totalAmount | number: '1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Risk Score Trend ────────────────────────────────────────── -->
+      <div class="chart-panel">
+        <h3 class="chart-panel__title" id="risk-chart-heading">
+          Risk Score Trend
+        </h3>
+
+        <div class="chart-panel__chart-wrapper">
+          <svg
+            class="trend-chart"
+            [attr.viewBox]="'0 0 ' + chartBounds.viewWidth + ' ' + chartBounds.viewHeight"
+            role="img"
+            aria-labelledby="risk-chart-title"
+            focusable="false"
+          >
+            <title id="risk-chart-title">
+              Hourly risk scores over the last 24 hours.
+              {{ elevatedWindowCount() }} window{{ elevatedWindowCount() !== 1 ? 's' : '' }}
+              flagged with elevated suspicion.
+            </title>
+
+            <!-- Elevated suspicion threshold line (0.5 = mid-chart) -->
+            <line
+              class="chart-grid chart-grid--threshold"
+              [attr.x1]="chartBounds.paddingX"
+              [attr.y1]="chartBounds.viewHeight / 2"
+              [attr.x2]="chartBounds.viewWidth - chartBounds.paddingX"
+              [attr.y2]="chartBounds.viewHeight / 2"
+            />
+            <line
+              class="chart-grid"
+              [attr.x1]="chartBounds.paddingX"
+              [attr.y1]="chartBounds.paddingY"
+              [attr.x2]="chartBounds.viewWidth - chartBounds.paddingX"
+              [attr.y2]="chartBounds.paddingY"
+            />
+            <line
+              class="chart-grid"
+              [attr.x1]="chartBounds.paddingX"
+              [attr.y1]="chartBounds.viewHeight - chartBounds.paddingY"
+              [attr.x2]="chartBounds.viewWidth - chartBounds.paddingX"
+              [attr.y2]="chartBounds.viewHeight - chartBounds.paddingY"
+            />
+
+            <!-- Shading below the line -->
+            @if (!riskTrend().isEmpty) {
+              <polygon
+                class="trend-chart__area trend-chart__area--risk"
+                [attr.points]="
+                  riskTrend().polylinePoints +
+                  ' ' +
+                  (chartBounds.viewWidth - chartBounds.paddingX) + ',' + (chartBounds.viewHeight - chartBounds.paddingY) +
+                  ' ' +
+                  chartBounds.paddingX + ',' + (chartBounds.viewHeight - chartBounds.paddingY)
+                "
+              />
+
+              <!-- Main polyline -->
+              <polyline
+                class="trend-chart__line trend-chart__line--risk"
+                [attr.points]="riskTrend().polylinePoints"
+                fill="none"
+              />
+
+              <!-- Elevated suspicion markers -->
+              @for (point of riskTrend().points; track point.label) {
+                @if (point.elevated) {
+                  <circle
+                    class="trend-chart__dot trend-chart__dot--elevated"
+                    [attr.cx]="point.svgX"
+                    [attr.cy]="point.svgY"
+                    r="5"
+                    [attr.aria-label]="'Elevated suspicion at ' + point.label + ': score ' + (point.value | number: '1.2-2')"
+                  />
+                } @else {
+                  <circle
+                    class="trend-chart__dot trend-chart__dot--risk"
+                    [attr.cx]="point.svgX"
+                    [attr.cy]="point.svgY"
+                    r="3"
+                    [attr.aria-label]="point.label + ': score ' + (point.value | number: '1.2-2')"
+                  />
+                }
+              }
+            }
+          </svg>
+
+          <!-- Threshold label -->
+          <div class="chart-threshold-label" aria-hidden="true">
+            Elevated suspicion threshold (0.50)
+          </div>
+
+          <!-- X-axis labels -->
+          <div class="chart-xaxis" aria-hidden="true">
+            @for (point of riskTrend().points; track point.label; let i = $index) {
+              @if (i === 0 || i === riskTrend().points.length - 1 || i % 6 === 0) {
+                <span
+                  class="chart-xaxis__label"
+                  [style.left.%]="(i / (riskTrend().points.length - 1)) * 100"
+                >
+                  {{ point.label }}
+                </span>
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Data table for screen readers -->
+        <table class="sr-only" aria-label="Risk score trend hourly data">
+          <caption>Risk scores and elevated suspicion flags per hour over the last 24 hours</caption>
+          <thead>
+            <tr>
+              <th scope="col">Hour (UTC)</th>
+              <th scope="col">Risk Score</th>
+              <th scope="col">Elevated Suspicion</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (window of windows(); track window.hourStart) {
+              <tr [class.is-elevated]="window.elevatedSuspicion">
+                <td>{{ window.hourStart | date: 'HH:mm' : 'UTC' }}</td>
+                <td>{{ window.windowRiskScore | number: '1.2-2' }}</td>
+                <td>{{ window.elevatedSuspicion ? 'Yes' : 'No' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  }
+
+</section>

@@ -1,0 +1,235 @@
+.risk-summary {
+  background: var(--color-surface);
+  border-radius: var(--border-radius-lg);
+  border: 2px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+
+  &--green {
+    border-color: var(--color-risk-green-border);
+    .risk-summary__tier-badge {
+      background: var(--color-risk-green-bg);
+      color: var(--color-risk-green);
+    }
+    .signal-bar__fill {
+      background: var(--color-risk-green);
+    }
+  }
+
+  &--yellow {
+    border-color: var(--color-risk-yellow-border);
+    .risk-summary__tier-badge {
+      background: var(--color-risk-yellow-bg);
+      color: var(--color-risk-yellow);
+    }
+    .signal-bar__fill {
+      background: var(--color-risk-yellow);
+    }
+  }
+
+  &--red {
+    border-color: var(--color-risk-red-border);
+    .risk-summary__tier-badge {
+      background: var(--color-risk-red-bg);
+      color: var(--color-risk-red);
+    }
+    .signal-bar__fill {
+      background: var(--color-risk-red);
+    }
+  }
+}
+
+.risk-summary__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.risk-summary__account {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.risk-summary__name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.risk-summary__id {
+  font-family: monospace;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.risk-summary__tier-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.625rem 1rem;
+  border-radius: var(--border-radius-md);
+  min-width: 7rem;
+  text-align: center;
+}
+
+.risk-summary__tier-label {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.risk-summary__tier-desc {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.risk-summary__body {
+  padding: 0 1.25rem 1.25rem;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.risk-summary__meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.75rem;
+}
+
+.risk-summary__meta-item {
+  dt {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    margin-bottom: 0.125rem;
+  }
+  dd {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+}
+
+.risk-summary__score {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.risk-summary__score-max {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.risk-summary__action {
+  flex: 1;
+  min-width: 200px;
+  background: var(--color-background);
+  border-radius: var(--border-radius-md);
+  padding: 0.75rem 1rem;
+}
+
+.risk-summary__action-label {
+  display: block;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.risk-summary__action-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.risk-summary__signals {
+  border-top: 1px solid var(--color-border);
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.risk-summary__signals-title {
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.signals-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    text-align: left;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    padding: 0.375rem 0.625rem;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.5rem 0.625rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.signals-table__type-badge {
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--color-background);
+  padding: 0.1875rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-secondary);
+}
+
+.signals-table__explanation {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.signal-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 120px;
+}
+
+.signal-bar__fill {
+  height: 6px;
+  border-radius: 999px;
+  flex: 1;
+  transition: width var(--transition-base);
+}
+
+.signal-bar__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  min-width: 3rem;
+  text-align: right;
+}
