@@ -8,10 +8,10 @@ import {
   signal
 } from '@angular/core';
 import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Account } from '../../shared/models/account.model';
-import { DataLoaderService } from '../../core/services/data-loader.service';
+import { DASHBOARD_API } from '../../core/services/dashboard-api.interface';
 
 @Component({
   selector: 'app-account-search',
@@ -25,7 +25,7 @@ export class AccountSearchComponent implements OnInit {
   @Output() readonly accountSelected = new EventEmitter<Account>();
   @Output() readonly searchCleared = new EventEmitter<void>();
 
-  private readonly dataLoader = inject(DataLoaderService);
+  private readonly api = inject(DASHBOARD_API);
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
   protected readonly results = signal<Account[]>([]);
@@ -34,8 +34,26 @@ export class AccountSearchComponent implements OnInit {
 
   constructor() {
     this.searchControl.valueChanges
-      .pipe(debounceTime(250), distinctUntilChanged(), takeUntilDestroyed())
-      .subscribe((query) => this.runSearch(query));
+      .pipe(
+        debounceTime(250),
+        distinctUntilChanged(),
+        switchMap((query) => {
+          const q = query.trim();
+          if (!q) {
+            this.results.set([]);
+            this.hasSearched.set(false);
+            return of([]);
+          }
+          this.hasSearched.set(true);
+          this.isLoading.set(true);
+          return this.api.searchAccounts(q).pipe(catchError(() => of([])));
+        }),
+        takeUntilDestroyed()
+      )
+      .subscribe((accounts) => {
+        this.results.set(accounts);
+        this.isLoading.set(false);
+      });
   }
 
   ngOnInit(): void {
@@ -44,7 +62,14 @@ export class AccountSearchComponent implements OnInit {
 
   protected onSubmit(event: Event): void {
     event.preventDefault();
-    this.runSearch(this.searchControl.value);
+    const q = this.searchControl.value.trim();
+    if (!q) return;
+    this.hasSearched.set(true);
+    this.isLoading.set(true);
+    this.api.searchAccounts(q).pipe(catchError(() => of([]))).subscribe((accounts) => {
+      this.results.set(accounts);
+      this.isLoading.set(false);
+    });
   }
 
   protected selectAccount(account: Account): void {
@@ -59,16 +84,5 @@ export class AccountSearchComponent implements OnInit {
     this.results.set([]);
     this.hasSearched.set(false);
     this.searchCleared.emit();
-  }
-
-  private runSearch(query: string): void {
-    const q = query.trim();
-    if (!q) {
-      this.results.set([]);
-      this.hasSearched.set(false);
-      return;
-    }
-    this.hasSearched.set(true);
-    this.results.set(this.dataLoader.searchAccounts(q));
   }
 }

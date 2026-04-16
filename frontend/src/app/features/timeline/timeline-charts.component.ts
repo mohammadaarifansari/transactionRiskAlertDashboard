@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { HourlyRiskWindow } from '../../shared/models/hourly-risk-window.model';
-import { HourlyWindowAggregatorService } from '../../core/services/hourly-window-aggregator.service';
+import { DASHBOARD_API } from '../../core/services/dashboard-api.interface';
 import {
   ChartDataTransformService,
   TrendSeries,
@@ -37,7 +37,7 @@ import {
   styleUrl: './timeline-charts.component.scss'
 })
 export class TimelineChartsComponent {
-  private readonly windowAggregator = inject(HourlyWindowAggregatorService);
+  private readonly api = inject(DASHBOARD_API);
   private readonly chartTransform = inject(ChartDataTransformService);
 
   /** The account whose 24-hour timeline to display. */
@@ -80,17 +80,19 @@ export class TimelineChartsComponent {
     this.hasError.set(false);
     this.errorMessage.set('');
 
-    try {
-      const result = this.windowAggregator.getWindowsForAccount(accountId, 24);
-      this.windows.set(result);
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : 'Unable to load timeline data. Please try again.';
-      this.hasError.set(true);
-      this.errorMessage.set(msg);
-      this.windows.set([]);
-    } finally {
-      this.isLoading.set(false);
-    }
+    this.api.getHourlyRiskWindows(accountId, 24).subscribe({
+      next: (result) => {
+        this.windows.set(result);
+        this.isLoading.set(false);
+      },
+      error: (err: unknown) => {
+        const msg =
+          err instanceof Error ? err.message : 'Unable to load timeline data. Please try again.';
+        this.hasError.set(true);
+        this.errorMessage.set(msg);
+        this.windows.set([]);
+        this.isLoading.set(false);
+      }
+    });
   }
 }
